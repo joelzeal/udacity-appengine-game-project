@@ -28,7 +28,7 @@ USER_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1),
 MEMCACHE_MOVES_REMAINING = 'MOVES_REMAINING'
 
 @endpoints.api(name='guess_the_word', version='v1')
-class GuessANumberApi(remote.Service):
+class GuessTheWordApi(remote.Service):
     """Game API"""
     @endpoints.method(request_message=USER_REQUEST,
                       response_message=StringMessage,
@@ -106,7 +106,7 @@ class GuessANumberApi(remote.Service):
                   game.target_missingLetters, 
                   '_')
                 game.put()
-                return game.to_form('Right guess - {}'.format(game.target_wordWithMissingLetter))
+                return game.to_form('Right guess')
         else:
             if game.attempts_remaining < 1:
                   game.end_game(False)
@@ -114,7 +114,7 @@ class GuessANumberApi(remote.Service):
             else:
                   game.attempts_remaining -= 1
                   game.put()
-                  return game.to_form('Wrong guess - {}'.format(game.target_wordWithMissingLetter))
+                  return game.to_form('Wrong guess')
          
         
 
@@ -161,4 +161,4 @@ class GuessANumberApi(remote.Service):
                          'The average moves remaining is {:.2f}'.format(average))
 
 
-api = endpoints.api_server([GuessANumberApi])
+api = endpoints.api_server([GuessTheWordApi])

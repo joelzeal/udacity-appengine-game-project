@@ -106,7 +106,7 @@ given time. Each game can be retrieved or played by using the path parameter
 ##Forms Included:
  - **GameForm**
     - Representation of a Game's state (urlsafe_key, attempts_remaining,
-    game_over flag, message, user_name).
+    game_over flag, message, user_name, word_missing_letters).
  - **NewGameForm**
     - Used to create a new game (user_name, min, max, attempts)
  - **MakeMoveForm**

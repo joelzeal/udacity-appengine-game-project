@@ -67,6 +67,7 @@ class Game(ndb.Model):
         form.user_name = self.user.get().name
         form.attempts_remaining = self.attempts_remaining
         form.game_over = self.game_over
+        form.word_missing_letters = self.target_wordWithMissingLetters
         form.message = message
         return form
 
@@ -100,6 +101,7 @@ class GameForm(messages.Message):
     game_over = messages.BooleanField(3, required=True)
     message = messages.StringField(4, required=True)
     user_name = messages.StringField(5, required=True)
+    word_missing_letters = messages.StringField(6)
 
 
 class NewGameForm(messages.Message):
