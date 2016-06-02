@@ -86,7 +86,7 @@ given time. Each game can be retrieved or played by using the path parameter
     from a previously cached memcache key.
 
 - **replaceCharactersInString**
-    - Path: 'games/active'
+    - Path: 'models'
     - Method: GET
     - Parameters: word, charactersToRemove, CharacterToReplaceWith
     - Returns: string
