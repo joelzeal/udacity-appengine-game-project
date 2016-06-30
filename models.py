@@ -22,7 +22,9 @@ class Game(ndb.Model):
     attempts_allowed = ndb.IntegerProperty(required=True)
     attempts_remaining = ndb.IntegerProperty(required=True, default=5)
     game_over = ndb.BooleanProperty(required=True, default=False)
-    user = ndb.KeyProperty(required=True, kind='User')
+    cancelled = ndb.BooleanProperty(default=False)
+    game_history = ndb.StringProperty(repeated=True)
+    # user = ndb.KeyProperty(required=True, kind='User')
 
     @classmethod
     def new_game(cls, user,  attempts):
@@ -43,20 +45,18 @@ class Game(ndb.Model):
         charactersToGuess = random.sample(list(wordToGuess), lengthOfWord/2 )
         wordWithMissingLetters = wordStore[randomIndex]
 
-        #for x in charactersToGuess:
-            # replace the character to search by _'
-        #    wordWithMissingLetters=wordWithMissingLetters.replace(x, "_")
-        
+        # game_id = Game.allocate_ids(size=1, parent=user)[0]
+        # game_key = ndb.Key(Game, game_id, parent=user)
 
         # create instance of game
-        game = Game(user=user,
+        game = Game(#user=user,
                     target_missingLetters=charactersToGuess,
                     target_word=''.join(wordToGuess),
                     target_wordWithMissingLetters=replaceCharactersInString(wordStore[randomIndex],charactersToGuess,'_'),
-                    #''.join(wordWithMissingLetters),
                     attempts_allowed=attempts,
                     attempts_remaining=attempts,
-                    game_over=False)
+                    game_over=False,
+                    parent=user)
         game.put()
         return game
 
@@ -64,7 +64,7 @@ class Game(ndb.Model):
         """Returns a GameForm representation of the Game"""
         form = GameForm()
         form.urlsafe_key = self.key.urlsafe()
-        form.user_name = self.user.get().name
+        form.user_name = self.key.parent().get().name # self.user.get().name
         form.attempts_remaining = self.attempts_remaining
         form.game_over = self.game_over
         form.word_missing_letters = self.target_wordWithMissingLetters
@@ -76,15 +76,16 @@ class Game(ndb.Model):
         the player lost."""
         self.game_over = True
         self.put()
-        # Add the game to the score 'board'
-        score = Score(user=self.user, date=date.today(), won=won,
-                      guesses=self.attempts_allowed - self.attempts_remaining)
+        # Add the game to the score 'board' 
+        # user=self.key.parent(),
+        score = Score( date=date.today(), won=won,
+                      guesses=self.attempts_allowed - self.attempts_remaining, parent=self.key.parent())
         score.put()
 
 
 class Score(ndb.Model):
     """Score object"""
-    user = ndb.KeyProperty(required=True, kind='User')
+    # user = ndb.KeyProperty(required=True, kind='User')
     date = ndb.DateProperty(required=True)
     won = ndb.BooleanProperty(required=True)
     guesses = ndb.IntegerProperty(required=True)
@@ -122,11 +123,23 @@ class ScoreForm(messages.Message):
     won = messages.BooleanField(3, required=True)
     guesses = messages.IntegerField(4, required=True)
 
+class UserRankForm(messages.Message):
+    """Used to display user rankings"""
+    user_name = messages.StringField(1, required=True)
+    performance_indicator = messages.FloatField(2, required=True)
+
+class UserRankForms(messages.Message):
+    """Return multiple User ranking forms"""
+    items = messages.MessageField(UserRankForm, 1, repeated=True)
 
 class ScoreForms(messages.Message):
     """Return multiple ScoreForms"""
     items = messages.MessageField(ScoreForm, 1, repeated=True)
 
+
+class GameForms(messages.Message):
+    """Return multiple games"""
+    items = messages.MessageField(GameForm, 1, repeated=True)
 
 class StringMessage(messages.Message):
     """StringMessage-- outbound (single) string message"""
