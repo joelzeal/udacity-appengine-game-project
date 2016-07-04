@@ -15,13 +15,16 @@ word from a list of random words, and provided maximum number of
 'attempts'. 'Guesses' are sent to the `make_move` endpoint which will reply
 with either: 'Your guess was right', 'Your guess was wrong', 'you win', or 'game over' 
 (if the maximum number of attempts is reached).
-Each time a player makes a right guess the letter is inserted into the the word and
-the player continues to guess until he completes the word. If the player successfully
-completes the word, he wins the game and a 'won' flag is set to true in the score model 
-for that game.
 Many different Guess the Word games can be played by many different Users at any
 given time. Each game can be retrieved or played by using the path parameter
 'urlsafe_game_key'.
+
+###Score Keeping
+Each time a player makes a right guess the letter is inserted into the the word and
+the player continues to guess until he completes the word. If the player successfully
+completes the word, he wins the game and a 'won' flag is set to true in the score model 
+for that game. Anytime a player makes a wrong guess an attemps counter is reduced by one.
+If a player runs out of attempts its game over.
 
 ##Files Included:
  - api.py: Contains endpoints and game playing logic.
@@ -88,13 +91,6 @@ given time. Each game can be retrieved or played by using the path parameter
     - Description: Gets the average number of attempts remaining for all games
     from a previously cached memcache key.
 
-- **replaceCharactersInString**
-    - Path: 'models'
-    - Method: GET
-    - Parameters: word, charactersToRemove, CharacterToReplaceWith
-    - Returns: string
-    - Description: Replace characters in a string with characters passed.
-
 - **get_user_games**
     - Path: 'games/user/{user_name}'
     - Method: GET
@@ -104,7 +100,7 @@ given time. Each game can be retrieved or played by using the path parameter
 
 - **cancel_game**
     - Path: 'game/cancel/{urlsafe_game_key}'
-    - Method: POST
+    - Method: PUT
     - Parameters: urlsafe_game_key
     - Returns: GameForm
     - Description: Cancels incompleted games.

@@ -33,3 +33,12 @@ def get_by_urlsafe(urlsafe, model):
     if not isinstance(entity, model):
         raise ValueError('Incorrect Kind')
     return entity
+
+
+def replaceCharactersInString(word, charactersToRemove, CharacterToReplaceWith):
+    """Replace characters in a string with characters passed. """
+
+    for x in charactersToRemove:
+            # replace the character to search by _'
+            word = word.replace(x, CharacterToReplaceWith)
+    return word
