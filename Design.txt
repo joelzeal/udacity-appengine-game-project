@@ -1,0 +1,27 @@
+Design Dicisions
+----------------
+Guess the Word is a word guessing game Api built on AppEngine.
+The Api is intended to serve as a backend for the game.
+
+All user actions a recorded. 
+Games are created by users and can be played by other users and multiple games can be played
+all a the same time.
+
+One of the goals of the Api is to provide a simple way of accepting user input and returning results.
+This is achieved by using ProtoRPC messages which is a framework for implementing HTTP-based remote 
+procedure call (RPC) services.
+
+Another one of the goals of this Api is to be able to persist data and so all data that require to
+be persisted are stored on AppEngine's Datastore.
+
+Often game players try to cheat when they play. Some measures have been put in place to handle some
+of those actions. eg. A completed or a cancelled game cannot be played, etc. 
+
+In order to have an Api that responds in a timely fashion, I have seperated tasks that are not required to 
+return immediate response to users from the ones that do. Those long running tasks are run as cron jobs 
+on AppEngine's Task Queues. 
+
+Having the above mentioned goals in mind as well as the requirements of the project, the Api has been 
+written to meet those specified requirements and goals.
+
+

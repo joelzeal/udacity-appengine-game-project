@@ -118,6 +118,9 @@ class GuessTheWordApi(remote.Service):
                 game_history_text = 'Guess:' + request.guess
                 game_history_text += ',Result:You win'
                 game.game_history.append(game_history_text)
+                game.game_over = True
+                game.target_wordWithMissingLetters = request.guess
+                del game.target_missingLetters[:]
                 game.put()
                 return game.to_form('You win!')
 
@@ -195,7 +198,7 @@ class GuessTheWordApi(remote.Service):
     @staticmethod
     def _cache_average_attempts():
         """Populates memcache with the average moves remaining of Games"""
-        games = Game.query(Game.game_over is False).fetch()
+        games = Game.query(Game.game_over == False).fetch()
         if games:
             count = len(games)
             total_attempts_remaining = sum([game.attempts_remaining for game in games])
@@ -214,11 +217,11 @@ class GuessTheWordApi(remote.Service):
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
         games = Game.query(ancestor=user.key)
-        games = games.filter(Game.game_over is False)
+        games = games.filter(Game.game_over == False)
         return GameForms(items=[game.to_form('') for game in games])
 
     @endpoints.method(request_message=GET_GAME_REQUEST,
-                      response_message=GameForm,
+                      response_message=StringMessage,
                       path='game/cancel/{urlsafe_game_key}',
                       name='cancel_game',
                       http_method='PUT')
@@ -245,7 +248,7 @@ class GuessTheWordApi(remote.Service):
         """Get high scores"""
         # score with fewer attempts has a higher ranking. eg. A score of 2 attempts is higher
         # a score with 5 attempts
-        scores = Score.query(Score.won is True).order(Score.guesses).fetch(request.number_of_results)
+        scores = Score.query(Score.won == True).order(Score.guesses).fetch(request.number_of_results)
         if not scores:
             raise endpoints.NotFoundException('No scores found.')
         return ScoreForms(items=[score.to_form() for score in scores])
@@ -295,11 +298,10 @@ class GuessTheWordApi(remote.Service):
                 else:
                     performance = -1.0  # -1 means user has not completed any games
 
+                # userRankingList.append()
                 userRanking.items.append(UserRankForm(user_name=user.name, performance_indicator=performance))
-
-        # return reverse sorted user ranks
-        # reverseOrderUserRanking.items = reversed(sorted(userRanking.items))
+        userRanking.items.sort(key=lambda x: x.performance_indicator, reverse=True)
         return userRanking
-        # return userRanking
+
 
 api = endpoints.api_server([GuessTheWordApi])
